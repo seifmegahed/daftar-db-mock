@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { writeFileSync } from "node:fs";
-import bcrypt from "bcrypt";
+// @ts-ignore
+import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 
 const saltRounds = 10;
 
@@ -34,13 +35,15 @@ const pickRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 const generateUsers = (num: number) => {
   const users = [];
   for (let i = 1; i <= num; i++) {
+    const salt = bcrypt.genSaltSync(saltRounds);
+    const password = bcrypt.hashSync(faker.internet.password(), salt);
     users.push({
       id: i,
       name: faker.name.fullName(),
       username: faker.internet.userName(),
       role: i % 5 === 0 ? "admin" : pickRandom(["engineer", "project_manager"]),
       active: faker.datatype.boolean(),
-      password: faker.internet.password(),
+      password,
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
     });
