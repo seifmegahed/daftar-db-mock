@@ -21,9 +21,9 @@ const toPopulate = {
   suppliers: false,
   projects: false,
   items: false,
-  documents: true,
+  documents: false,
   projectItems: false,
-  documentsRelations: true,
+  documentsRelations: false,
 };
 
 // Function to insert data into each table

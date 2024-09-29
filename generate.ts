@@ -32,6 +32,17 @@ const documentsStartId = 10;
 const projectItemsStartId = 3;
 const documentsRelationsStartId = 9;
 
+const numberOfUsers = 10;
+const numberOfClients = 40;
+const numberOfSuppliers = 50;
+const numberOfAddresses = 10;
+const numberOfContacts = 30;
+const numberOfProjects = 70;
+const numberOfItems = 100;
+const numberOfDocuments = 120;
+const numberOfProjectItems = 100;
+const numberOfDocumentsRelations = 200;
+
 // Domain-specific data arrays
 const engineeringFields = [
   "Generators",
@@ -402,7 +413,6 @@ const generateProjectItems = (
       quantity: faker.number.int({ min: 1, max: 100 }),
       price: faker.commerce.price({ min: 10, max: 1000000 }),
       currency: currencyOptions.find((o) => o.label === "EGP")?.value ?? 9,
-      notes: faker.lorem.sentence(),
     });
   }
   return projectItems;
@@ -441,28 +451,28 @@ const generateDocumentsRelations = (
 // Generate mock data
 const users = generateUsers(10, usersStartId);
 const { clients, clientAddresses, clientContacts } = generateClients(
-  40,
+  numberOfClients,
   users,
   addressesStartId,
   contactsStartId,
   clientsStartId
 );
 const { suppliers, supplierAddresses, supplierContacts } = generateSuppliers(
-  50,
+  numberOfSuppliers,
   users,
   addressesStartId + clientAddresses.length,
   contactsStartId + clientContacts.length,
   suppliersStartId
 );
 const otherContacts = generateContacts(
-  30,
+  numberOfContacts,
   users,
   suppliers,
   clients,
   contactsStartId + [...clientContacts, ...supplierContacts].length
 );
 const otherAddresses = generateAddresses(
-  30,
+  numberOfAddresses,
   users,
   suppliers,
   clients,
@@ -470,16 +480,16 @@ const otherAddresses = generateAddresses(
 );
 const projects = generateProjects(70, users, clients, projectsStartId);
 const items = generateItems(100, users, itemsStartId);
-const documents = generateDocuments(100, documentsStartId);
+const documents = generateDocuments(120, documentsStartId);
 const projectItems = generateProjectItems(
-  100,
+  numberOfProjectItems,
   projects,
   items,
   suppliers,
   projectItemsStartId
 );
 const documentsRelations = generateDocumentsRelations(
-  120,
+  numberOfDocumentsRelations,
   documents,
   projects,
   suppliers,

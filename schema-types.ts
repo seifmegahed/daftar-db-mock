@@ -122,7 +122,6 @@ export type ProjectItemTableType = {
   quantity: number;
   price: string;
   currency: number;
-  notes?: string;
 };
 
 export type DocumentRelationTableType = {
