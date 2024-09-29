@@ -38,9 +38,11 @@ const numberOfSuppliers = 50;
 const numberOfAddresses = 10;
 const numberOfContacts = 30;
 const numberOfProjects = 70;
-const numberOfItems = 100;
 const numberOfDocuments = 120;
-const numberOfProjectItems = 100;
+
+const maxNumberOfItemsPerProject = 10;
+const numberOfItems = 100;
+
 const numberOfDocumentsRelations = 200;
 
 // Domain-specific data arrays
@@ -397,23 +399,28 @@ const generateDocuments = (
 
 // Generate project items (linking items to projects)
 const generateProjectItems = (
-  num: number,
+  maxNum: number,
   projects: ProjectTableType[],
   items: ItemTableType[],
   suppliers: SupplierTableType[],
   startId: number = 0
 ): ProjectItemTableType[] => {
   const projectItems = [];
-  for (let i = 1; i <= num; i++) {
-    projectItems.push({
-      id: startId + i,
-      projectId: pickRandom(projects).id,
-      itemId: pickRandom(items).id,
-      supplierId: pickRandom(suppliers).id,
-      quantity: faker.number.int({ min: 1, max: 100 }),
-      price: faker.commerce.price({ min: 10, max: 1000000 }),
-      currency: currencyOptions.find((o) => o.label === "EGP")?.value ?? 9,
-    });
+  let x = startId;
+  for (const project of projects) {
+    const num = Math.floor(Math.random() * maxNum);
+    for (let i = 1; i <= num; i++) {
+      projectItems.push({
+        id: x + i,
+        projectId: project.id,
+        itemId: pickRandom(items).id,
+        supplierId: pickRandom(suppliers).id,
+        quantity: faker.number.int({ min: 1, max: 100 }),
+        price: faker.commerce.price({ min: 10, max: 10000 }),
+        currency: currencyOptions.find((o) => o.label === "EGP")?.value ?? 9,
+      });
+    }
+    x += num;
   }
   return projectItems;
 };
@@ -487,7 +494,7 @@ const projects = generateProjects(
 const items = generateItems(numberOfItems, users, itemsStartId);
 const documents = generateDocuments(numberOfDocuments, documentsStartId);
 const projectItems = generateProjectItems(
-  numberOfProjectItems,
+  maxNumberOfItemsPerProject,
   projects,
   items,
   suppliers,
