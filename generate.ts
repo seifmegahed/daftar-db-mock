@@ -449,7 +449,7 @@ const generateDocumentsRelations = (
 };
 
 // Generate mock data
-const users = generateUsers(10, usersStartId);
+const users = generateUsers(numberOfUsers, usersStartId);
 const { clients, clientAddresses, clientContacts } = generateClients(
   numberOfClients,
   users,
@@ -478,9 +478,14 @@ const otherAddresses = generateAddresses(
   clients,
   addressesStartId + [...clientAddresses, ...supplierAddresses].length
 );
-const projects = generateProjects(70, users, clients, projectsStartId);
-const items = generateItems(100, users, itemsStartId);
-const documents = generateDocuments(120, documentsStartId);
+const projects = generateProjects(
+  numberOfProjects,
+  users,
+  clients,
+  projectsStartId
+);
+const items = generateItems(numberOfItems, users, itemsStartId);
+const documents = generateDocuments(numberOfDocuments, documentsStartId);
 const projectItems = generateProjectItems(
   numberOfProjectItems,
   projects,
