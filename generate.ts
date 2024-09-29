@@ -369,7 +369,7 @@ const generateDocuments = (
   for (let i = 1; i <= num; i++) {
     documents.push({
       id: startId + i,
-      name: `Document ${i} - ${pickRandom([
+      name: `Document ${startId + i} - ${pickRandom([
         "Contract",
         "Specification",
         "Order",
