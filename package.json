@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "generate": "deno run --allow-read --allow-write --allow-env generate.ts",
-    "populate": "deno run --allow-read --allow-write --allow-env populate.ts"
+    "populate": "deno run --allow-read --allow-write --allow-env --allow-net populate.ts"
   },
   "keywords": [],
   "author": "",

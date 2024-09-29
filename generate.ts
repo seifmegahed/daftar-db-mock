@@ -1,9 +1,35 @@
+import { config } from "dotenv";
 import { faker } from "@faker-js/faker";
 import { writeFileSync } from "node:fs";
-// @ts-ignore
-import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 
-const saltRounds = 10;
+const configResult = config();
+
+const { USER_PASSWORD } = configResult.parsed;
+
+import {
+  AddressTableType,
+  ClientTableType,
+  ContactTableType,
+  DocumentRelationTableType,
+  DocumentTableType,
+  ItemTableType,
+  ProjectItemTableType,
+  ProjectTableType,
+  SupplierTableType,
+  UserTableType,
+} from "./schema-types.ts";
+
+// Start IDs for each table
+const usersStartId = 1;
+const clientsStartId = 2;
+const suppliersStartId = 2;
+const addressesStartId = 4;
+const contactsStartId = 3;
+const projectsStartId = 1;
+const itemsStartId = 3;
+const documentsStartId = 10;
+const projectItemsStartId = 3;
+const documentsRelationsStartId = 9;
 
 // Domain-specific data arrays
 const engineeringFields = [
@@ -20,32 +46,65 @@ const suppliersFields = [
   "Schneider Electric",
   "KSB",
 ];
-const cities = ["Cairo", "Alexandria", "Riyadh", "Beijing", "Berlin"];
+const cities = ["Cairo", "Alexandria", "Al Sharqiyah", "Aswan", "Matruh"];
+
+// Format XXX-XXX-XXX-XXXX
+const generateRandomRegistrationNumber = () =>
+  Math.floor(100 + Math.random() * 900) +
+  "-" +
+  Math.floor(100 + Math.random() * 900) +
+  "-" +
+  Math.floor(100 + Math.random() * 900) +
+  "-" +
+  Math.floor(1000 + Math.random() * 9000);
+
 const statusCodes = [
-  { label: "Active", value: "active" },
-  { label: "Completed", value: "completed" },
-  { label: "Pending", value: "pending" },
+  { value: 0, label: "Active" },
+  { value: 1, label: "Inactive" },
+  { value: 2, label: "Archived" },
+  { value: 3, label: "Pending" },
+  { value: 4, label: "Rejected" },
+  { value: 5, label: "Cancelled" },
+  { value: 6, label: "Completed" },
+  { value: 7, label: "On Hold" },
+  { value: 8, label: "Pending Approval" },
+  { value: 9, label: "Pending Payment" },
+  { value: 10, label: "Pending Delivery" },
+  { value: 11, label: "Issue" },
 ];
-const currencyOptions = ["EGP", "USD", "EUR"];
+
+const currencyOptions = [
+  { value: 0, label: "USD" },
+  { value: 1, label: "EUR" },
+  { value: 2, label: "GBP" },
+  { value: 3, label: "JPY" },
+  { value: 4, label: "INR" },
+  { value: 5, label: "CNY" },
+  { value: 7, label: "AED" },
+  { value: 8, label: "SAR" },
+  { value: 9, label: "EGP" },
+];
+
+const addressTypes = ["Main Office", "Headquarters", "Office", "Branch"];
 
 // Helper to pick a random item from an array
-const pickRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+const pickRandom = <T>(arr: T[]): T =>
+  arr[Math.floor(Math.random() * arr.length)];
 
 // Generate users with domain-specific roles
-const generateUsers = (num: number) => {
+const generateUsers = (num: number, startId: number = 0): UserTableType[] => {
   const users = [];
   for (let i = 1; i <= num; i++) {
-    const salt = bcrypt.genSaltSync(saltRounds);
-    const password = bcrypt.hashSync(faker.internet.password(), salt);
     users.push({
-      id: i,
-      name: faker.name.fullName(),
+      id: startId + i,
+      name: faker.person.firstName() + " " + faker.person.lastName(),
       username: faker.internet.userName(),
-      role: i % 5 === 0 ? "admin" : pickRandom(["engineer", "project_manager"]),
-      active: faker.datatype.boolean(),
-      password,
+      role: i % 5 === 0 ? "admin" : "user",
+      active: true,
+      password: USER_PASSWORD,
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
+      lastActive: faker.date.recent(),
     });
   }
   return users;
@@ -54,11 +113,11 @@ const generateUsers = (num: number) => {
 // Generate addresses
 const generateAddresses = (
   num: number,
-  users: any[],
-  suppliers: any[],
-  clients: any[],
+  users: UserTableType[],
+  suppliers: SupplierTableType[],
+  clients: ClientTableType[],
   startId: number = 0
-) => {
+): AddressTableType[] => {
   const getRandomRelation = () =>
     pickRandom([
       { supplierId: pickRandom(suppliers).id },
@@ -69,9 +128,10 @@ const generateAddresses = (
     const randomRelation = getRandomRelation();
     addresses.push({
       id: startId + i,
-      addressLine: faker.address.streetAddress(),
+      name: pickRandom(addressTypes),
+      addressLine: faker.location.streetAddress(),
       city: pickRandom(cities),
-      country: faker.address.country(),
+      country: "Egypt",
       ...randomRelation,
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
@@ -85,11 +145,11 @@ const generateAddresses = (
 // Generate contacts
 const generateContacts = (
   num: number,
-  users: any[],
-  suppliers: any[],
-  clients: any[],
+  users: UserTableType[],
+  suppliers: SupplierTableType[],
+  clients: ClientTableType[],
   startId: number = 0
-) => {
+): ContactTableType[] => {
   const getRandomRelation = () =>
     pickRandom([
       { supplierId: pickRandom(suppliers).id },
@@ -101,7 +161,7 @@ const generateContacts = (
     const randomRelation = getRandomRelation();
     contacts.push({
       id: startId + i,
-      name: faker.name.fullName(),
+      name: faker.person.fullName(),
       phone: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
@@ -117,25 +177,29 @@ const generateContacts = (
   return contacts;
 };
 
-// Modify generateClients to ensure each client has at least one contact and address
 const generateClients = (
   num: number,
-  users: any[],
-  addresses: any[] = [],
-  contacts: any[] = []
-) => {
+  users: UserTableType[],
+  addressesStartId: number = 0,
+  contactsStartId: number = 0,
+  clientsStartId: number = 0
+): {
+  clients: ClientTableType[];
+  clientAddresses: AddressTableType[];
+  clientContacts: ContactTableType[];
+} => {
   const clients = [];
   const clientAddresses = [];
   const clientContacts = [];
   for (let i = 1; i <= num; i++) {
-    const clientId = i;
+    const clientId = clientsStartId + i;
 
-    // Ensure each client has at least one contact and address
     const primaryAddress = {
-      id: addresses.length + i, // Assuming addresses array is already initialized
-      addressLine: faker.address.streetAddress(),
+      id: addressesStartId + i,
+      name: pickRandom(addressTypes),
+      addressLine: faker.location.streetAddress(),
       city: pickRandom(cities),
-      country: faker.address.country(),
+      country: "Egypt",
       clientId,
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
@@ -145,8 +209,8 @@ const generateClients = (
     clientAddresses.push(primaryAddress);
 
     const primaryContact = {
-      id: contacts.length + i, // Assuming contacts array is already initialized
-      name: faker.name.fullName(),
+      id: contactsStartId + i,
+      name: faker.person.fullName(),
       phone: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
@@ -161,10 +225,10 @@ const generateClients = (
     clients.push({
       id: clientId,
       name: `${faker.company.name()} Engineering`,
-      registrationNumber: faker.commerce.price({ min: 20, max: 400000 }),
+      registrationNumber: generateRandomRegistrationNumber(),
       website: faker.internet.url(),
       notes: `Client specialized in ${pickRandom(engineeringFields)} projects.`,
-      isActive: faker.datatype.boolean(),
+      isActive: true,
       primaryAddressId: primaryAddress.id,
       primaryContactId: primaryContact.id,
       createdBy: pickRandom(users).id,
@@ -176,25 +240,29 @@ const generateClients = (
   return { clients, clientAddresses, clientContacts };
 };
 
-// Modify generateSuppliers to ensure each supplier has at least one contact and address
 const generateSuppliers = (
   num: number,
-  users: any[],
-  addresses: any[] = [],
-  contacts: any[] = []
-) => {
+  users: UserTableType[],
+  addressesStartId: number = 0,
+  contactsStartId: number = 0,
+  suppliersStartId: number = 0
+): {
+  suppliers: SupplierTableType[];
+  supplierAddresses: AddressTableType[];
+  supplierContacts: ContactTableType[];
+} => {
   const suppliers = [];
   const supplierAddresses = [];
   const supplierContacts = [];
   for (let i = 1; i <= num; i++) {
-    const supplierId = i;
+    const supplierId = suppliersStartId + i;
 
-    // Ensure each supplier has at least one contact and address
     const primaryAddress = {
-      id: addresses.length + i, // Assuming addresses array is already initialized
-      addressLine: faker.address.streetAddress(),
+      id: addressesStartId + i,
+      name: pickRandom(addressTypes),
+      addressLine: faker.location.streetAddress(),
       city: pickRandom(cities),
-      country: faker.address.country(),
+      country: "Egypt",
       supplierId,
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
@@ -204,8 +272,8 @@ const generateSuppliers = (
     supplierAddresses.push(primaryAddress);
 
     const primaryContact = {
-      id: contacts.length + i, // Assuming contacts array is already initialized
-      name: faker.name.fullName(),
+      id: contactsStartId + i,
+      name: faker.person.fullName(),
       phone: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
@@ -221,12 +289,10 @@ const generateSuppliers = (
       id: supplierId,
       name: `${faker.company.name()} Supply Co.`,
       field: pickRandom(suppliersFields),
-      registrationNumber: faker.number.float(),
+      registrationNumber: generateRandomRegistrationNumber(),
       website: faker.internet.url(),
       notes: `Supplier of ${pickRandom(engineeringFields)} equipment.`,
-      isActive: faker.datatype.boolean(),
-      primaryAddressId: primaryAddress.id,
-      primaryContactId: primaryContact.id,
+      isActive: true,
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
       updatedAt: faker.date.recent(),
@@ -237,11 +303,16 @@ const generateSuppliers = (
 };
 
 // Generate projects with mechanical engineering contexts
-const generateProjects = (num: number, users: any[], clients: any[]) => {
+const generateProjects = (
+  num: number,
+  users: UserTableType[],
+  clients: ClientTableType[],
+  startId: number = 0
+): ProjectTableType[] => {
   const projects = [];
   for (let i = 1; i <= num; i++) {
     projects.push({
-      id: i,
+      id: startId + i,
       name: `${pickRandom(engineeringFields)} Project ${i}`,
       status: pickRandom(statusCodes).value,
       description: `Project involving installation and maintenance of ${pickRandom(
@@ -262,11 +333,15 @@ const generateProjects = (num: number, users: any[], clients: any[]) => {
 };
 
 // Generate items (mechanical components)
-const generateItems = (num: number, users: any[]) => {
+const generateItems = (
+  num: number,
+  users: UserTableType[],
+  startId: number = 0
+): ItemTableType[] => {
   const items = [];
   for (let i = 1; i <= num; i++) {
     items.push({
-      id: i,
+      id: startId + i,
       name: faker.commerce.productName(),
       type: pickRandom(engineeringFields),
       description: `${pickRandom(
@@ -285,11 +360,14 @@ const generateItems = (num: number, users: any[]) => {
 };
 
 // Generate documents (contracts, specifications, orders)
-const generateDocuments = (num: number) => {
+const generateDocuments = (
+  num: number,
+  startId: number = 0
+): DocumentTableType[] => {
   const documents = [];
   for (let i = 1; i <= num; i++) {
     documents.push({
-      id: i,
+      id: startId + i,
       name: `Document ${i} - ${pickRandom([
         "Contract",
         "Specification",
@@ -308,19 +386,21 @@ const generateDocuments = (num: number) => {
 // Generate project items (linking items to projects)
 const generateProjectItems = (
   num: number,
-  projects: any[],
-  items: any[],
-  suppliers: any[]
-) => {
+  projects: ProjectTableType[],
+  items: ItemTableType[],
+  suppliers: SupplierTableType[],
+  startId: number = 0
+): ProjectItemTableType[] => {
   const projectItems = [];
   for (let i = 1; i <= num; i++) {
     projectItems.push({
-      id: i,
+      id: startId + i,
       projectId: pickRandom(projects).id,
       itemId: pickRandom(items).id,
       supplierId: pickRandom(suppliers).id,
       quantity: faker.number.int({ min: 1, max: 100 }),
       price: faker.commerce.price({ min: 10, max: 1000000 }),
+      currency: currencyOptions.find((o) => o.label === "EGP").value,
       notes: faker.lorem.sentence(),
     });
   }
@@ -330,12 +410,13 @@ const generateProjectItems = (
 // Generate document relations (linking documents to other entities)
 const generateDocumentsRelations = (
   num: number,
-  documents: any[],
-  projects: any[],
-  suppliers: any[],
-  items: any[],
-  clients: any[]
-) => {
+  documents: DocumentTableType[],
+  projects: ProjectTableType[],
+  suppliers: SupplierTableType[],
+  items: ItemTableType[],
+  clients: ClientTableType[],
+  startId: number = 0
+): DocumentRelationTableType[] => {
   const getRandomRelation = () =>
     pickRandom([
       { projectId: pickRandom(projects).id },
@@ -348,7 +429,7 @@ const generateDocumentsRelations = (
   for (let i = 1; i <= num; i++) {
     const randomRelation = getRandomRelation();
     documentsRelations.push({
-      id: i,
+      id: startId + i,
       documentId: pickRandom(documents).id,
       ...randomRelation,
     });
@@ -357,46 +438,64 @@ const generateDocumentsRelations = (
 };
 
 // Generate mock data
-const users = generateUsers(10);
-const { clients, clientAddresses, clientContacts } = generateClients(20, users);
-const { suppliers, supplierAddresses, supplierContacts } = generateSuppliers(
-  30,
+const users = generateUsers(10, usersStartId);
+const { clients, clientAddresses, clientContacts } = generateClients(
+  40,
   users,
-  clientAddresses,
-  clientContacts
+  addressesStartId,
+  contactsStartId,
+  clientsStartId
+);
+const { suppliers, supplierAddresses, supplierContacts } = generateSuppliers(
+  50,
+  users,
+  addressesStartId + clientAddresses.length,
+  contactsStartId + clientContacts.length,
+  suppliersStartId
 );
 const otherContacts = generateContacts(
-  20,
+  30,
   users,
   suppliers,
   clients,
-  [...clientContacts, ...supplierContacts].length
+  contactsStartId + [...clientContacts, ...supplierContacts].length
 );
 const otherAddresses = generateAddresses(
-  10,
+  30,
   users,
   suppliers,
   clients,
-  [...clientAddresses, ...supplierAddresses].length
+  addressesStartId + [...clientAddresses, ...supplierAddresses].length
 );
-const projects = generateProjects(50, users, clients);
-const items = generateItems(100, users);
-const documents = generateDocuments(50);
-const projectItems = generateProjectItems(100, projects, items, suppliers);
+const projects = generateProjects(70, users, clients, projectsStartId);
+const items = generateItems(100, users, itemsStartId);
+const documents = generateDocuments(50, documentsStartId);
+const projectItems = generateProjectItems(
+  100,
+  projects,
+  items,
+  suppliers,
+  projectItemsStartId
+);
 const documentsRelations = generateDocumentsRelations(
-  50,
+  120,
   documents,
   projects,
   suppliers,
   items,
-  clients
+  clients,
+  documentsRelationsStartId
 );
 
 // Write to JSON file
 const mockData = {
   users,
-  addresses: [...clientAddresses, ...supplierAddresses, ...otherAddresses],
-  contacts: [...clientContacts, ...supplierContacts, ...otherContacts],
+  addresses: [...clientAddresses, ...supplierAddresses, ...otherAddresses].sort(
+    (a, b) => a.id - b.id
+  ),
+  contacts: [...clientContacts, ...supplierContacts, ...otherContacts].sort(
+    (a, b) => a.id - b.id
+  ),
   clients,
   suppliers,
   projects,
