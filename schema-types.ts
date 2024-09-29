@@ -64,9 +64,6 @@ export type SupplierTableType = {
   notes?: string;
   isActive: boolean;
 
-  primaryAddressId: number;
-  primaryContactId: number;
-
   createdBy: number;
   createdAt: Date;
   updatedBy?: number;
@@ -76,7 +73,7 @@ export type SupplierTableType = {
 export type ProjectTableType = {
   id: number;
   name: string;
-  status: string;
+  status: number;
   description?: string;
   startDate: Date;
   endDate: Date;

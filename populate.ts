@@ -6,36 +6,53 @@ import mockData from "./mockData.json" with { type: "json" };
 // Load environment variables from .env file
 const configResult = config();
 
+// @ts-ignore
 const connectionString = `postgresql://${configResult.parsed.DATABASE_USER}:${configResult.parsed.DATABASE_PASSWORD}@${configResult.parsed.DATABASE_HOST}:${configResult.parsed.DATABASE_PORT}/${configResult.parsed.DATABASE_NAME}`;
 
 const client = new pg.Pool({
   connectionString,
 });
 
+const toPopulate = {
+  users: false,
+  addresses: false,
+  contacts: false,
+  clients: false,
+  suppliers: false,
+  projects: false,
+  items: false,
+  documents: true,
+  projectItems: false,
+  documentsRelations: true,
+};
+
 // Function to insert data into each table
 const insertData = async () => {
   try {
 
     // Insert Users
-    for (const user of mockData.users) {
-      await client.query(
-        `INSERT INTO "user" (id, name, username, role, active, password, created_at, updated_at, last_active) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          user.id,
-          user.name,
-          user.username,
-          user.role,
-          user.active,
-          user.password,
-          user.createdAt,
-          user.updatedAt,
-          user.lastActive,
-        ]
-      );
+    if (toPopulate.users) {
+      for (const user of mockData.users) {
+        await client.query(
+          `INSERT INTO "user" (id, name, username, role, active, password, created_at, updated_at, last_active) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            user.id,
+            user.name,
+            user.username,
+            user.role,
+            user.active,
+            user.password,
+            user.createdAt,
+            user.updatedAt,
+            user.lastActive,
+          ]
+        );
+      }
     }
 
     // Insert Clients
+    if (toPopulate.clients) {
     for (const clientData of mockData.clients) {
       await client.query(
         `INSERT INTO "client" (id, name, registration_number, website, notes, is_active, primary_address_id, primary_contact_id, created_by, created_at, updated_by, updated_at) 
@@ -56,8 +73,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Suppliers
+    if (toPopulate.suppliers) {
     for (const supplier of mockData.suppliers) {
       await client.query(
         `INSERT INTO "supplier" (id, name, field, registration_number, website, notes, is_active, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, 
@@ -76,8 +95,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Addresses
+    if (toPopulate.addresses) {
     for (const address of mockData.addresses) {
       await client.query(
         `INSERT INTO "address" (id, name, address_line, city, country, supplier_id, client_id, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -96,15 +117,17 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Contacts
+    if (toPopulate.contacts) {
     for (const contact of mockData.contacts) {
       await client.query(
         `INSERT INTO "contact" (id, name, phone_number, email, notes, supplier_id, client_id, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           contact.id,
           contact.name,
-          contact.phone,
+          contact.phoneNumber,
           contact.email,
           contact.notes,
           contact.supplierId ?? null,
@@ -116,8 +139,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Projects
+    if (toPopulate.projects) {
     for (const project of mockData.projects) {
       await client.query(
         `INSERT INTO "project" (id, name, status, description, start_date, end_date, notes, client_id, owner_id, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
@@ -138,9 +163,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Items
-    
+    if (toPopulate.items) {
     for (const item of mockData.items) {
       await client.query(
         `INSERT INTO "item" (id, name, type, description, mpn, make, notes, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -159,8 +185,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
     
     // Insert Project Items
+    if (toPopulate.projectItems) {
     for (const projectItem of mockData.projectItems) {
       await client.query(
         `INSERT INTO "project_items" (id, project_id, item_id, supplier_id, quantity, price, currency) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -175,8 +203,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Documents
+    if (toPopulate.documents) {
     for (const document of mockData.documents) {
       await client.query(
         `INSERT INTO "document" (id, name, path, extension, notes, created_by, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -191,8 +221,10 @@ const insertData = async () => {
         ]
       );
     }
+    }
 
     // Insert Document Relations
+    if (toPopulate.documentsRelations) {
     for (const documentRelation of mockData.documentsRelations) {
       await client.query(
         `INSERT INTO "document_relations" (id, document_id, project_id, supplier_id, item_id, client_id) VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -205,6 +237,7 @@ const insertData = async () => {
           documentRelation.clientId ?? null,
         ]
       );
+    }
     }
 
     console.log("All mock data inserted successfully.");

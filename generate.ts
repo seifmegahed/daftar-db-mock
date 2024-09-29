@@ -4,6 +4,7 @@ import { writeFileSync } from "node:fs";
 
 const configResult = config();
 
+// @ts-ignore
 const { USER_PASSWORD } = configResult.parsed;
 
 import {
@@ -162,7 +163,7 @@ const generateContacts = (
     contacts.push({
       id: startId + i,
       name: faker.person.fullName(),
-      phone: faker.phone.number(),
+      phoneNumber: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
 
@@ -211,7 +212,7 @@ const generateClients = (
     const primaryContact = {
       id: contactsStartId + i,
       name: faker.person.fullName(),
-      phone: faker.phone.number(),
+      phoneNumber: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
       clientId,
@@ -274,7 +275,7 @@ const generateSuppliers = (
     const primaryContact = {
       id: contactsStartId + i,
       name: faker.person.fullName(),
-      phone: faker.phone.number(),
+      phoneNumber: faker.phone.number(),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
       supplierId,
@@ -373,8 +374,8 @@ const generateDocuments = (
         "Specification",
         "Order",
       ])}`,
-      path: faker.system.filePath(),
-      extension: faker.system.commonFileExt(),
+      path: ".local-storage/documents/56_way_sealed_connector_system_ecu (1).pdf",
+      extension: "pdf",
       notes: faker.lorem.sentences(2),
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
@@ -400,7 +401,7 @@ const generateProjectItems = (
       supplierId: pickRandom(suppliers).id,
       quantity: faker.number.int({ min: 1, max: 100 }),
       price: faker.commerce.price({ min: 10, max: 1000000 }),
-      currency: currencyOptions.find((o) => o.label === "EGP").value,
+      currency: currencyOptions.find((o) => o.label === "EGP")?.value ?? 9,
       notes: faker.lorem.sentence(),
     });
   }
@@ -469,7 +470,7 @@ const otherAddresses = generateAddresses(
 );
 const projects = generateProjects(70, users, clients, projectsStartId);
 const items = generateItems(100, users, itemsStartId);
-const documents = generateDocuments(50, documentsStartId);
+const documents = generateDocuments(100, documentsStartId);
 const projectItems = generateProjectItems(
   100,
   projects,
