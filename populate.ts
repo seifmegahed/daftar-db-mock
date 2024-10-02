@@ -14,16 +14,16 @@ const client = new pg.Pool({
 });
 
 const toPopulate = {
-  users: false,
-  addresses: false,
-  contacts: false,
-  clients: false,
-  suppliers: false,
-  projects: false,
-  items: false,
-  documents: false,
-  projectItems: false,
-  documentsRelations: false,
+  users: true,
+  addresses: true,
+  contacts: true,
+  clients: true,
+  suppliers: true,
+  projects: true,
+  items: true,
+  documents: true,
+  projectItems: true,
+  documentsRelations: true,
 };
 
 // Function to insert data into each table

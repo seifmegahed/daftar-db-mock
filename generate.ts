@@ -22,28 +22,28 @@ import {
 
 // Start IDs for each table
 const usersStartId = 1;
-const clientsStartId = 2;
-const suppliersStartId = 2;
-const addressesStartId = 4;
-const contactsStartId = 3;
-const projectsStartId = 1;
-const itemsStartId = 3;
-const documentsStartId = 10;
-const projectItemsStartId = 3;
-const documentsRelationsStartId = 9;
+const clientsStartId = 0;
+const suppliersStartId = 0;
+const addressesStartId = 0;
+const contactsStartId = 0;
+const projectsStartId = 0;
+const itemsStartId = 0;
+const documentsStartId = 0;
+const projectItemsStartId = 0;
+const documentsRelationsStartId = 0;
 
-const numberOfUsers = 10;
-const numberOfClients = 40;
-const numberOfSuppliers = 50;
-const numberOfAddresses = 10;
-const numberOfContacts = 30;
-const numberOfProjects = 70;
-const numberOfDocuments = 120;
+const numberOfUsers = 14;
+const numberOfClients = 150;
+const numberOfSuppliers = 150;
+const numberOfAddresses = 300;
+const numberOfContacts = 300;
+const numberOfProjects = 150;
+const numberOfDocuments = 150;
 
-const maxNumberOfItemsPerProject = 10;
-const numberOfItems = 100;
+const maxNumberOfItemsPerProject = 20;
+const numberOfItems = 300;
 
-const numberOfDocumentsRelations = 200;
+const numberOfDocumentsRelations = 400;
 
 // Domain-specific data arrays
 const engineeringFields = [
@@ -109,10 +109,26 @@ const pickRandom = <T>(arr: T[]): T =>
 const generateUsers = (num: number, startId: number = 0): UserTableType[] => {
   const users = [];
   for (let i = 1; i <= num; i++) {
+    let uniqueName = false;
+    let userName = "";
+
+    while (!uniqueName) {
+      userName = faker.person.firstName() + " " + faker.person.lastName();
+      uniqueName = users.find((u) => u.name === userName) === undefined;
+    }
+
+    let uniqueUsername = false;
+    let userUsername = "";
+
+    while (!uniqueUsername) {
+      userUsername = faker.internet.userName();
+      uniqueUsername =
+        users.find((u) => u.username === userUsername) === undefined;
+    }
     users.push({
       id: startId + i,
-      name: faker.person.firstName() + " " + faker.person.lastName(),
-      username: faker.internet.userName(),
+      name: userName,
+      username: userUsername,
       role: i % 5 === 0 ? "admin" : "user",
       active: true,
       password: USER_PASSWORD,
@@ -236,9 +252,17 @@ const generateClients = (
     };
     clientContacts.push(primaryContact);
 
+    let uniqueName = false;
+    let clientName = "";
+
+    while (!uniqueName) {
+      clientName = `${faker.company.name()} Engineering`;
+      uniqueName = clients.find((c) => c.name === clientName) === undefined;
+    }
+
     clients.push({
       id: clientId,
-      name: `${faker.company.name()} Engineering`,
+      name: clientName,
       registrationNumber: generateRandomRegistrationNumber(),
       website: faker.internet.url(),
       notes: `Client specialized in ${pickRandom(engineeringFields)} projects.`,
@@ -299,9 +323,17 @@ const generateSuppliers = (
     };
     supplierContacts.push(primaryContact);
 
+    let uniqueName = false;
+    let supplierName = "";
+
+    while (!uniqueName) {
+      supplierName = `${faker.company.name()} Trading & Engineering Co.`;
+      uniqueName = suppliers.find((s) => s.name === supplierName) === undefined;
+    }
+
     suppliers.push({
       id: supplierId,
-      name: `${faker.company.name()} Supply Co.`,
+      name: supplierName,
       field: pickRandom(suppliersFields),
       registrationNumber: generateRandomRegistrationNumber(),
       website: faker.internet.url(),
@@ -325,9 +357,17 @@ const generateProjects = (
 ): ProjectTableType[] => {
   const projects = [];
   for (let i = 1; i <= num; i++) {
+    let uniqueName = false;
+    let projectName = "";
+
+    while (!uniqueName) {
+      projectName = `${pickRandom(engineeringFields)} Project ${i}`;
+      uniqueName = projects.find((p) => p.name === projectName) === undefined;
+    }
+
     projects.push({
       id: startId + i,
-      name: `${pickRandom(engineeringFields)} Project ${i}`,
+      name: projectName,
       status: pickRandom(statusCodes).value,
       description: `Project involving installation and maintenance of ${pickRandom(
         engineeringFields
@@ -354,9 +394,17 @@ const generateItems = (
 ): ItemTableType[] => {
   const items = [];
   for (let i = 1; i <= num; i++) {
+    let uniqueName = false;
+    let itemName = "";
+
+    while (!uniqueName) {
+      itemName = `${pickRandom(engineeringFields)} Equipment ${i}`;
+      uniqueName = items.find((i) => i.name === itemName) === undefined;
+    }
+
     items.push({
       id: startId + i,
-      name: faker.commerce.productName(),
+      name: itemName,
       type: pickRandom(engineeringFields),
       description: `${pickRandom(
         engineeringFields
@@ -386,6 +434,10 @@ const generateDocuments = (
         "Contract",
         "Specification",
         "Order",
+        "Manual",
+        "Invoice",
+        "Service Agreement",
+        "Purchase Order",
       ])}`,
       path: ".local-storage/documents/56_way_sealed_connector_system_ecu (1).pdf",
       extension: "pdf",
