@@ -79,7 +79,7 @@ const insertData = async () => {
     if (toPopulate.suppliers) {
     for (const supplier of mockData.suppliers) {
       await client.query(
-        `INSERT INTO "supplier" (id, name, field, registration_number, website, notes, is_active, created_by, created_at, updated_by, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`, 
+        `INSERT INTO "supplier" (id, name, field, registration_number, website, notes, is_active, created_by, created_at, updated_by, updated_at, primary_address_id, primary_contact_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`, 
         [
           supplier.id,
           supplier.name,
@@ -92,6 +92,8 @@ const insertData = async () => {
           supplier.createdAt,
           supplier.updatedBy,
           supplier.updatedAt,
+          supplier.primaryAddressId,
+          supplier.primaryContactId,
         ]
       );
     }
