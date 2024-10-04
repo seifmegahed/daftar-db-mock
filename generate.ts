@@ -33,12 +33,12 @@ const projectItemsStartId = 0;
 const documentsRelationsStartId = 0;
 
 const numberOfUsers = 14;
-const numberOfClients = 150;
-const numberOfSuppliers = 150;
-const numberOfAddresses = 300;
-const numberOfContacts = 300;
-const numberOfProjects = 150;
-const numberOfDocuments = 150;
+const numberOfClients = 400;
+const numberOfSuppliers = 400;
+const numberOfAddresses = 500;
+const numberOfContacts = 500;
+const numberOfProjects = 400;
+const numberOfDocuments = 800;
 
 const maxNumberOfItemsPerProject = 20;
 const numberOfItems = 300;
@@ -441,7 +441,7 @@ const generateDocuments = (
         "Service Agreement",
         "Purchase Order",
       ])}`,
-      path: ".local-storage/documents/56_way_sealed_connector_system_ecu (1).pdf",
+      path: ".local-storage/documents/sample-document.pdf",
       extension: "pdf",
       notes: faker.lorem.sentences(2),
       createdBy: pickRandom(users).id,
