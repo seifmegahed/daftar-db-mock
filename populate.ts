@@ -25,6 +25,7 @@ const toPopulate = {
   projectItems: true,
   saleItems: true,
   documentsRelations: true,
+  projectComments: true,
 };
 
 // Function to insert data into each table
@@ -271,6 +272,19 @@ const insertData = async () => {
         ]
       );
     }
+    }
+    if (toPopulate.projectComments) {
+      for (const projectComment of mockData.projectComments) {
+        await client.query(
+          `INSERT INTO "project_comment" (project_id, created_by, text, created_at) VALUES ($1, $2, $3, $4)`,
+          [
+            projectComment.projectId,
+            projectComment.userId,
+            projectComment.text,
+            projectComment.createdAt,
+          ]
+        );
+      }
     }
 
     console.log("All mock data inserted successfully.");

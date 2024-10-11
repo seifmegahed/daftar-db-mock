@@ -31,6 +31,7 @@ const itemsStartId = 0;
 const documentsStartId = 0;
 const projectItemsStartId = 0;
 const documentsRelationsStartId = 0;
+const projectCommentsStartId = 0;
 
 const numberOfUsers = 14;
 const numberOfClients = 400;
@@ -41,6 +42,7 @@ const numberOfProjects = 400;
 const numberOfDocuments = 800;
 
 const maxNumberOfItemsPerProject = 20;
+const numberOfProjectComments = 30;
 const numberOfItems = 300;
 
 const numberOfDocumentsRelations = 400;
@@ -510,6 +512,27 @@ const generateDocumentsRelations = (
   return documentsRelations;
 };
 
+const generateProjectComments = (
+  projects: ProjectTableType[],
+  users: UserTableType[],
+  maxComments: number,
+  startId: number
+) => {
+  const projectComments = [];
+  for (const project of projects) {
+    const num = Math.floor(Math.random() * maxComments);
+    for (let i = 1; i <= num; i++) {
+      projectComments.push({
+        projectId: project.id,
+        userId: pickRandom(users).id,
+        text: faker.lorem.sentence(Math.floor(Math.random() * 4)),
+        createdAt: faker.date.past(),
+      });
+    }
+  }
+  return projectComments;
+};
+
 // Generate mock data
 const users = generateUsers(numberOfUsers, usersStartId);
 const { clients, clientAddresses, clientContacts } = generateClients(
@@ -565,6 +588,13 @@ const documentsRelations = generateDocumentsRelations(
   documentsRelationsStartId
 );
 
+const projectComments = generateProjectComments(
+  projects,
+  users,
+  numberOfProjectComments,
+  projectCommentsStartId
+);
+
 // Write to JSON file
 const mockData = {
   users,
@@ -581,6 +611,7 @@ const mockData = {
   documents,
   projectItems,
   documentsRelations,
+  projectComments,
 };
 
 writeFileSync("mockData.json", JSON.stringify(mockData, null, 2));
