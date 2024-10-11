@@ -443,6 +443,7 @@ const generateDocuments = (
       ])}`,
       path: ".local-storage/documents/sample-document.pdf",
       extension: "pdf",
+      private: pickRandom([false, false, true]),
       notes: faker.lorem.sentences(2),
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),

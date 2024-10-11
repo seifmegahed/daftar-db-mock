@@ -23,6 +23,7 @@ const toPopulate = {
   items: true,
   documents: true,
   projectItems: true,
+  saleItems: true,
   documentsRelations: true,
 };
 
@@ -216,12 +217,29 @@ const insertData = async () => {
       );
     }
     }
+    // Insert Project Items
+    if (toPopulate.saleItems) {
+    for (const projectItem of mockData.projectItems) {
+      await client.query(
+        `INSERT INTO "commercial_offer_item" (project_id, item_id, quantity, price, currency) VALUES ($1, $2, $3, $4, $5)`,
+        // `INSERT INTO "project_items" (id, project_id, item_id, supplier_id, quantity, price, currency) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          // projectItem.id,
+          projectItem.projectId,
+          projectItem.itemId,
+          projectItem.quantity,
+          String(Number(projectItem.price) * 1.1), 
+          projectItem.currency,
+        ]
+      );
+    }
+    }
 
     // Insert Documents
     if (toPopulate.documents) {
     for (const document of mockData.documents) {
       await client.query(
-        `INSERT INTO "document" (name, path, extension, notes, created_by, created_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+        `INSERT INTO "document" (name, path, extension, notes, created_by, created_at, private) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         // `INSERT INTO "document" (id, name, path, extension, notes, created_by, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           // document.id,
@@ -231,6 +249,7 @@ const insertData = async () => {
           document.notes,
           document.createdBy,
           document.createdAt,
+          document.private,
         ]
       );
     }
