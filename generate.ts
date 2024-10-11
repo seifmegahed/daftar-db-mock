@@ -194,7 +194,7 @@ const generateContacts = (
     contacts.push({
       id: startId + i,
       name: faker.person.fullName(),
-      phoneNumber: faker.phone.number(),
+      phoneNumber: faker.phone.number({ style: "international" }),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
 
@@ -243,7 +243,7 @@ const generateClients = (
     const primaryContact = {
       id: contactsStartId + i,
       name: faker.person.fullName(),
-      phoneNumber: faker.phone.number(),
+      phoneNumber: faker.phone.number({ style: "international" }),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
       clientId,
@@ -314,7 +314,7 @@ const generateSuppliers = (
     const primaryContact = {
       id: contactsStartId + i,
       name: faker.person.fullName(),
-      phoneNumber: faker.phone.number(),
+      phoneNumber: faker.phone.number({ style: "international" }),
       email: faker.internet.email(),
       notes: faker.lorem.sentences(2),
       supplierId,
@@ -446,7 +446,7 @@ const generateDocuments = (
       path: ".local-storage/documents/sample-document.pdf",
       extension: "pdf",
       private: pickRandom([false, false, true]),
-      notes: faker.lorem.sentences(2),
+      notes: faker.lorem.sentences({min:2, max:3}),
       createdBy: pickRandom(users).id,
       createdAt: faker.date.past(),
     });
@@ -525,7 +525,7 @@ const generateProjectComments = (
       projectComments.push({
         projectId: project.id,
         userId: pickRandom(users).id,
-        text: faker.lorem.sentence(Math.floor(Math.random() * 4)),
+        text: faker.lorem.sentences({ min: 2, max: 3 }),
         createdAt: faker.date.past(),
       });
     }
