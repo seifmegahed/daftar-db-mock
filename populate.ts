@@ -7,7 +7,7 @@ import mockData from "./mockData.json" with { type: "json" };
 const configResult = config();
 
 // @ts-ignore
-const connectionString = `postgresql://${configResult.parsed.DATABASE_USER}:${configResult.parsed.DATABASE_PASSWORD}@${configResult.parsed.DATABASE_HOST}:${configResult.parsed.DATABASE_PORT}/${configResult.parsed.DATABASE_NAME}`;
+const connectionString = configResult.parsed.NEXT_PUBLIC_VERCEL === "true" ? configResult.parsed.POSTGRES_URL : `postgresql://${configResult.parsed.DATABASE_USER}:${configResult.parsed.DATABASE_PASSWORD}@${configResult.parsed.DATABASE_HOST}:${configResult.parsed.DATABASE_PORT}/${configResult.parsed.DATABASE_NAME}`;
 
 const client = new pg.Pool({
   connectionString,
